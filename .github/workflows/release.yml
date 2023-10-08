@@ -41,4 +41,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            build/src/report.pdf
+            src/report.pdf
