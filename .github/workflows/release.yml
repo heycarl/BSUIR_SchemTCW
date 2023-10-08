@@ -2,9 +2,8 @@ name: Create and publish a Docker image
 
 on:
   push:
-    branches: 
-      - 'main'
-      - 'cicd'
+    tags:
+      - v*
 
 env:
   CW_NAME: ${{ github.event.repository.name }}
