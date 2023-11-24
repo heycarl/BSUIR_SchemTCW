@@ -314,3 +314,7 @@ config.sh
 *.vsd
 *.tar
 *.gz
+
+# drawio temp & backup files
+*.bkp
+*.dtmp
