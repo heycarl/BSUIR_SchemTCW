@@ -18,7 +18,6 @@ $(REPORT_PDF).pdf: *.tex *.bib
 	# Used for master paper only
 	# $(BIBTEX) My.aux
 	$(PDFLATEX) $(REPORT_PDF)
-	$(PDFLATEX) $(REPORT_PDF)
 	# Citations count fixing
 	$(PDFLATEX) $(REPORT_PDF)
 
@@ -27,4 +26,4 @@ cleanall: clean
 
 .PHONY: clean cleanall
 clean:
-	$(RM) *.aux *.log *.out *.toc *.gz *.gz\(busy\) *.blg *.bbl *.nlo *.nls *.fls *.xdv *.fdb_latexmk *.ilg
+	# $(RM) *.aux *.log *.out *.toc *.gz *.gz\(busy\) *.blg *.bbl *.nlo *.nls *.fls *.xdv *.fdb_latexmk *.ilg
