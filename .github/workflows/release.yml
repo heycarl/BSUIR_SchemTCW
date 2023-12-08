@@ -6,7 +6,7 @@ on:
       - v*
 
 env:
-  CW_NAME: ${{ github.event.repository.name }}
+  OUTPUT_FILE: "src/${{ github.event.repository.name }}-${{ github.ref_name }}.pdf"
 
 jobs:
   build-and-release:
@@ -21,9 +21,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build
+      - name: Compile drawio files
+        run: |
+          bash compiler/drawio.sh
+
+      - name: Build LaTeX project
         run: |
           python compile.py
+          mv src/report.pdf ${{ env.OUTPUT_FILE }}
 
       - name: Create Release
         id: create_release
@@ -41,4 +46,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            src/report.pdf
+            ${{ env.OUTPUT_FILE }}
