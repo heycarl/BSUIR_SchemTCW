@@ -2,8 +2,8 @@ name: Create and publish a Docker image
 
 on:
   push:
-    tags:
-      - v*
+    # tags:
+    #   - v*
 
 env:
   OUTPUT_FILE: "src/${{ github.event.repository.name }}-${{ github.ref_name }}.pdf"
@@ -23,7 +23,8 @@ jobs:
 
       - name: Compile drawio files
         run: |
-          bash compiler/drawio.sh
+          sudo snap install drawio
+          bash compiler/drawio.sh --dir .
 
       - name: Build LaTeX project
         run: |
