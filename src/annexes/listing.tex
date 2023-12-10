@@ -1,0 +1,206 @@
+\begin{verbatim}
+#define HORIZONTAL_PIXELS			168
+#define VERTICAL_PIXELS				42
+#define PIXELS_COUNT				(HORIZONTAL_PIXELS
+ * VERTICAL_PIXELS)
+#define PIXELS_COUNT_IN_BYTES 		(PIXELS_COUNT/8)
+#define HORIZONTAL_PIXELS_IN_BYTES 	(HORIZONTAL_PIXELS/8)
+
+void update_led_matrix() {
+    for(int row = 0; row < VERTICAL_PIXELS / LED_NUM_LINES;
+	 row++) {
+        for(int column = 0; column < HORIZONTAL_PIXELS;
+		 column++) {
+            RGB px1 = get_pixel(column, row);
+            RGB px2 = get_pixel(column, row + 
+			LED_NUM_LINES * 1);
+            RGB px3 = get_pixel(column, row + 
+			LED_NUM_LINES * 2);
+
+
+            LED_Set_Pin(PinRed1, px1.red);
+            LED_Set_Pin(PinGreen1, px1.green);
+            LED_Set_Pin(PinBlue1, px1.blue);
+
+            LED_Set_Pin(PinRed2, px2.red);
+            LED_Set_Pin(PinGreen2, px2.green);
+            LED_Set_Pin(PinBlue2, px2.blue);
+
+            LED_Set_Pin(PinRed3, px3.red);
+            LED_Set_Pin(PinGreen3, px3.green);
+            LED_Set_Pin(PinBlue3, px3.blue);
+            led_clk();
+        }
+        led_latch();
+        select_row(row);
+    }
+}
+RGB get_color(LED_COLOR c) {
+	RGB col = {0};
+	switch (c) {
+		case Red:
+			col.red = 1;
+			break;
+		case Green:
+			col.green = 1;
+			break;
+		case Blue:
+			col.blue = 1;
+			break;
+		case Yellow:
+			col.red = 1;
+			col.green = 1;
+			break;
+		case Black:
+			col.red = 0;
+			col.green = 0;
+			col.blue = 0;
+			break;
+		default:
+			break;
+	}
+	return col;
+}
+
+void select_row(uint16_t row) {
+	LED_Set_Pin(PinADDRA, row & 1);
+	LED_Set_Pin(PinADDRB, row & 2);
+	LED_Set_Pin(PinADDRC, row & 4);
+	LED_Set_Pin(PinADDRD, row & 8);
+	LED_Set_Pin(PinADDRE, row & 16);
+}
+
+RGB get_pixel(uint16_t x, uint16_t y){
+	RGB col = {0};
+	uint8_t r_byte = (PIXEL_ID * 3) / 8;
+	uint8_t g_byte = (PIXEL_ID * 3 + 1) / 8;
+	uint8_t b_byte = (PIXEL_ID * 3 + 2) / 8;
+
+	uint8_t r_shift = (PIXEL_ID * 3 + 0) - r_byte * 8;
+	uint8_t g_shift = (PIXEL_ID * 3 + 1) - g_byte * 8;
+	uint8_t b_shift = (PIXEL_ID * 3 + 2) - b_byte * 8;
+	col.red   = (graphicsBuffer[r_byte] & 1 << r_shift) 
+	? 1 : 0;
+	col.green = (graphicsBuffer[g_byte] & 1 << g_shift)
+	? 1 : 0;
+	col.blue  = (graphicsBuffer[b_byte] & 1 << b_shift) 
+	? 1 : 0;
+	return col;
+}
+
+void led_clk() {
+	LED_Set_Pin(PinCLK, 1);
+	__NOP();
+	LED_Set_Pin(PinCLK, 0);
+}
+void led_latch(){
+	LED_Set_Pin(PinLATCH, 1);
+	__NOP();
+	LED_Set_Pin(PinLATCH, 0);
+}
+
+#define PIXEL_ID (y*HORIZONTAL_PIXELS + x)
+
+void set_pixel(uint16_t x, uint16_t y, LED_COLOR col) {
+	uint8_t r_byte = (PIXEL_ID * 3 + 0) / 8;
+	uint8_t g_byte = (PIXEL_ID * 3 + 1) / 8;
+	uint8_t b_byte = (PIXEL_ID * 3 + 2) / 8;
+
+	uint8_t r_shift = (PIXEL_ID * 3 + 0) - r_byte * 8;
+	uint8_t g_shift = (PIXEL_ID * 3 + 1) - g_byte * 8;
+	uint8_t b_shift = (PIXEL_ID * 3 + 2) - b_byte * 8;
+
+
+	RGB c = get_color(col);
+	if (c.red) {
+		graphicsBuffer[r_byte] |= 1 << r_shift;
+	} else {
+		graphicsBuffer[r_byte] &= 0 << r_shift;
+	}
+	if (c.green) {
+		graphicsBuffer[g_byte] |= 1 << g_shift;
+	} else {
+		graphicsBuffer[g_byte] &= 0 << g_shift;
+	}
+	if (c.blue) {
+		graphicsBuffer[b_byte] |= 1 << b_shift;
+	} else {
+		graphicsBuffer[b_byte] &= 0 << b_shift;
+	}
+}
+
+void LED_Set_Pin(LED_PIN p, uint8_t state) {
+	 switch (p)	 {
+	 	 case PinRed1:
+	 		HAL_GPIO_WritePin(LED_MATRIX_R1_GPIO_Port, 
+			LED_MATRIX_R1_Pin, state);
+	 		 break;
+	 	case PinRed2:
+	 		HAL_GPIO_WritePin(LED_MATRIX_R2_GPIO_Port, 
+			LED_MATRIX_R2_Pin, state);
+	 		break;
+	 	case PinRed3:
+	 		HAL_GPIO_WritePin(LED_MATRIX_R3_GPIO_Port, 
+			LED_MATRIX_R3_Pin, state);
+	 		break;
+	 	case PinGreen1:
+	 		HAL_GPIO_WritePin(LED_MATRIX_G1_GPIO_Port, 
+			LED_MATRIX_G1_Pin, state);
+	 		break;
+	 	case PinGreen2:
+	 		HAL_GPIO_WritePin(LED_MATRIX_G2_GPIO_Port, 
+			LED_MATRIX_G2_Pin, state);
+	 		break;
+	 	case PinGreen3:
+	 		HAL_GPIO_WritePin(LED_MATRIX_G3_GPIO_Port, 
+			LED_MATRIX_G3_Pin, state);
+	 		break;
+	 	case PinBlue1:
+	 		HAL_GPIO_WritePin(LED_MATRIX_B1_GPIO_Port, 
+			LED_MATRIX_B1_Pin, state);
+	 		break;
+	 	case PinBlue2:
+	 		HAL_GPIO_WritePin(LED_MATRIX_B2_GPIO_Port, 
+			LED_MATRIX_B2_Pin, state);
+	 		break;
+	 	case PinBlue3:
+	 		HAL_GPIO_WritePin(LED_MATRIX_B3_GPIO_Port,
+			 LED_MATRIX_B3_Pin, state);
+	 		break;
+	 	case PinADDRA:
+	 		HAL_GPIO_WritePin(LED_MATRIX_ADDRESS_LINE_A_GPIO_Port,
+			 LED_MATRIX_ADDRESS_LINE_A_Pin, state);
+	 		break;
+	 	case PinADDRB:
+	 		HAL_GPIO_WritePin(LED_MATRIX_ADDRESS_LINE_B_GPIO_Port,
+			 LED_MATRIX_ADDRESS_LINE_B_Pin, state);
+	 		break;
+	 	case PinADDRC:
+	 		HAL_GPIO_WritePin(LED_MATRIX_ADDRESS_LINE_C_GPIO_Port,
+			 LED_MATRIX_ADDRESS_LINE_C_Pin, state);
+	 		break;
+	 	case PinADDRD:
+	 		HAL_GPIO_WritePin(LED_MATRIX_ADDRESS_LINE_D_GPIO_Port,
+			 LED_MATRIX_ADDRESS_LINE_D_Pin, state);
+	 		break;
+	 	case PinADDRE:
+	 		HAL_GPIO_WritePin(LED_MATRIX_ADDRESS_LINE_E_GPIO_Port,
+			 LED_MATRIX_ADDRESS_LINE_E_Pin, state);
+	 		break;
+	 	case PinCLK:
+	 		HAL_GPIO_WritePin(LED_MATRIX_CLK_GPIO_Port, 
+			LED_MATRIX_CLK_Pin, state);
+	 		break;
+	 	case PinLATCH:
+	 		HAL_GPIO_WritePin(LED_MATRIX_LATCH_GPIO_Port, 
+			LED_MATRIX_LATCH_Pin, state);
+	 		break;
+	 	case PinOE:
+	 		HAL_GPIO_WritePin(LED_MATRIX_OE_GPIO_Port, 
+			LED_MATRIX_OE_Pin, state);
+	 		break;
+	 	default:
+	 		break;
+	 }
+}
+\end{verbatim}
